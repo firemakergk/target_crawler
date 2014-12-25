@@ -6,6 +6,7 @@ import time
 
 import MySQLdb
 import sys
+import getopt
 import feedparser
 
 # reload(sys)
@@ -22,7 +23,7 @@ class RssSingleCrawler:
         str += ']}'
         return str
 
-    def crawlRss(self, target_id):
+    def crawlRssByTargetId(self, target_id):
         flag = 0
         try:
             self.conn = MySQLdb.connect(host="localhost", user="webmoudel", passwd="newsMetro01", db="newsmetro", port=3306, charset="utf8")
@@ -51,4 +52,31 @@ class RssSingleCrawler:
             flag = 2
         return flag;
 
-RssSingleCrawler().crawlRss(sys.argv[1])
+    def crawlRssByUrl(self, url):
+        flag = 0
+        try:
+            rss = feedparser.parse(url)
+            rss_json = self.transJson(rss)
+        except Exception:
+            flag = 2
+        if flag==0 :
+            return rss_json
+        else:
+            return flag
+
+
+shortargs = ''
+longargs = ['target_id=', 'url=']
+opts, args = getopt.getopt( sys.argv[1:], shortargs, longargs)
+
+for t in opts:
+    if t[0]=="--target_id":
+        target_id = t[1]
+    if t[0]=="--url":
+        url = t[1]
+
+crawler = RssSingleCrawler()
+if target_id is not None:
+    crawler.crawlRssByTargetId(target_id)
+elif url is not None:
+    print crawler.crawlRssByUrl(url)
