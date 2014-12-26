@@ -17,6 +17,7 @@ import sys
 # reload(sys)
 # sys.setdefaultencoding("utf-8")
 class WebSingleSpider(Spider):
+    by_url = 0
     target_list = []
     name = u'webSingle'
     allowed_domains = []
@@ -31,28 +32,40 @@ class WebSingleSpider(Spider):
         cur.execute('select * from target_point where id = %s and isRss=false;',target_id)
         self.conn.commit()
         for t in cur:
-            print t[2]
+            # print t[2]
             yield {'id': t[0], 'url': t[3], 'xpath': t[5], 'regex': t[6],'md5': t[7], 'status': t[9]}
         cur.close()
 
-    def __init__(self,target_id):
+    def __init__(self,target_id=None,url=None,xpath=None):
         self.target_id = target_id
+        self.url = url
+        self.xpath = xpath
+        if self.url is not None and self.xpath is not None:
+            self.by_url = 1
         self.target_list = self.nextTarget(target_id)
         self.current_target = ''
         self.redis_conn = redis.Redis(host='127.0.0.1', port=6379)
         return
 
     def start_requests(self):
-        self.current_target = self.target_list.next()
-        start_url = self.current_target['url']
-        yield Request(start_url, dont_filter=True)
+        if self.by_url==0:
+            self.current_target = self.target_list.next()
+            start_url = self.current_target['url']
+            yield Request(start_url, dont_filter=True)
+        else:
+            self.current_target = self.url
+            start_url = self.url
+            yield Request(start_url, dont_filter=True)
 
     def parse(self, response):
         res_body = response._get_body()
         md5 = hashlib.md5(res_body).hexdigest()
         #md5 = ''
         sel = Selector(response)
-        news_list = sel.xpath(self.current_target['xpath']+'//a')
+        if self.by_url == 0:
+            news_list = sel.xpath(self.current_target['xpath']+'//a')
+        else:
+            news_list = sel.xpath(self.xpath+'//a')
         items = []
 
         for news in news_list:
@@ -66,13 +79,15 @@ class WebSingleSpider(Spider):
             items.append(item)
             #log.msg("Appending item...", level='INFO')
 
-       	log.msg("Appending done.", level='INFO')
-        self.updateInfo(md5, self.current_target, items)
-        yield items
+        if self.by_url == 0:
+            log.msg("Appending done.", level='INFO')
+            self.updateInfo(md5, self.current_target, items)
+            yield items
 
-        self.current_target = self.target_list.next()
-        yield Request(self.current_target['url'], dont_filter=True)
-
+            self.current_target = self.target_list.next()
+            yield Request(self.current_target['url'], dont_filter=True)
+        else:
+            print self.transJson(items)
 
     def updateInfo(self, md5, current_target,items):
         pValue = (md5, self.current_target['id'])
