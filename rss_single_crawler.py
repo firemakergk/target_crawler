@@ -69,6 +69,8 @@ shortargs = ''
 longargs = ['target_id=', 'url=']
 opts, args = getopt.getopt( sys.argv[1:], shortargs, longargs)
 
+target_id = None
+url = None
 for t in opts:
     if t[0]=="--target_id":
         target_id = t[1]
