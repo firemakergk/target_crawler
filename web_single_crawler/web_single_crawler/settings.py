@@ -9,7 +9,7 @@
 #
 
 BOT_NAME = 'web_single_crawler'
-
+LOG_LEVEL = 'CRITICAL'
 SPIDER_MODULES = ['web_single_crawler.spiders']
 NEWSPIDER_MODULE = 'web_single_crawler.spiders'
 
