@@ -3,6 +3,10 @@ from scrapy.http import HtmlResponse
 import gtk
 import webkit
 import jswebkit
+import logging
+
+LOG_FILENAME = "webSingle_log.log"
+logging.basicConfig(filename=LOG_FILENAME,level=logging.ERROR)
 
 class WebkitDownloader( object ):
 
