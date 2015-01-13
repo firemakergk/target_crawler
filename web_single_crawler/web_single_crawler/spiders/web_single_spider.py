@@ -26,13 +26,12 @@ class WebSingleSpider(Spider):
         try:
             self.conn = MySQLdb.connect(host="localhost", user="webmoudel", passwd="newsMetro01", db="newsmetro", port=3306, charset="utf8")
         except MySQLdb.Error,e:
-            print "Mysql Error %d: %s" % (e.args[0], e.args[1])
+            sys.stderr.write("Mysql Error %d: %s" % (e.args[0], e.args[1]))
 
         cur = self.conn.cursor()
         cur.execute('select * from target_point where id = %s and isRss=false;',target_id)
         self.conn.commit()
         for t in cur:
-            # print t[2]
             yield {'id': t[0], 'url': t[3], 'xpath': t[5], 'regex': t[6],'md5': t[7], 'status': t[9]}
         cur.close()
 
@@ -87,7 +86,7 @@ class WebSingleSpider(Spider):
             self.current_target = self.target_list.next()
             yield Request(self.current_target['url'], dont_filter=True)
         else:
-            print self.transJson(items)
+            sys.stdout.write(self.transJson(items))
 
     def updateInfo(self, md5, current_target,items):
         pValue = (md5, self.current_target['id'])

@@ -26,7 +26,7 @@ class RssCrawler:
         try:
             self.conn = MySQLdb.connect(host="localhost", user="webmoudel", passwd="newsMetro01", db="newsmetro", port=3306, charset="utf8")
         except MySQLdb.Error,e:
-            print "Mysql Error %d: %s" % (e.args[0], e.args[1])
+            sys.stderr.write("Mysql Error %d: %s" % (e.args[0], e.args[1]))
         cur = self.conn.cursor()
         cur.execute('select * from target_point where isRss=true;')
         self.conn.commit()

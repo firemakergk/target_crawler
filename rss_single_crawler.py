@@ -47,7 +47,7 @@ class RssSingleCrawler:
             self.conn.commit()
         except MySQLdb.Error, e1:
             flag = 1
-            print "Mysql Error %d: %s" % (e1.args[0], e1.args[1])
+            sys.stderr.write("Mysql Error %d: %s" % (e1.args[0], e1.args[1]))
         except Exception:
             flag = 2
         return flag;
@@ -81,4 +81,4 @@ crawler = RssSingleCrawler()
 if target_id is not None:
     crawler.crawlRssByTargetId(target_id)
 elif url is not None:
-    print crawler.crawlRssByUrl(url)
+    sys.stdout.write(crawler.crawlRssByUrl(url))
