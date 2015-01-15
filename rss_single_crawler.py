@@ -9,8 +9,8 @@ import sys
 import getopt
 import feedparser
 
-# reload(sys)
-# sys.setdefaultencoding("utf-8")
+reload(sys)
+sys.setdefaultencoding("utf-8")
 class RssSingleCrawler:
 
     def transJson(self,rss):
@@ -81,4 +81,5 @@ crawler = RssSingleCrawler()
 if target_id is not None:
     crawler.crawlRssByTargetId(target_id)
 elif url is not None:
+    sys.stdout.write("hello world")
     sys.stdout.write(crawler.crawlRssByUrl(url))
