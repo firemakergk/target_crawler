@@ -14,8 +14,8 @@ import redis
 import MySQLdb
 import sys
 
-# reload(sys)
-# sys.setdefaultencoding("utf-8")
+reload(sys)
+sys.setdefaultencoding("utf-8")
 class WebSingleSpider(Spider):
     by_url = 0
     target_list = []
@@ -86,6 +86,7 @@ class WebSingleSpider(Spider):
             self.current_target = self.target_list.next()
             yield Request(self.current_target['url'], dont_filter=True)
         else:
+            sys.stdout.write('hello world!')
             sys.stdout.write(self.transJson(items))
 
     def updateInfo(self, md5, current_target,items):
