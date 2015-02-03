@@ -81,5 +81,4 @@ crawler = RssSingleCrawler()
 if target_id is not None:
     crawler.crawlRssByTargetId(target_id)
 elif url is not None:
-    sys.stdout.write("hello world")
     sys.stdout.write(crawler.crawlRssByUrl(url))
