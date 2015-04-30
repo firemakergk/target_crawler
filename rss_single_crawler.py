@@ -15,8 +15,8 @@ class RssSingleCrawler:
 
     def transJson(self,rss):
         str = '{'
-        str += '\"title\":\"'+rss.feed.title.replace('\"','\\\"')+'\",\"link\":\"'+rss.feed.link.replace('\"','\\\"')+'\",\"subtitle\":\"\",'
-        str += '\"items\":['
+        str += '\"title\":\"'+rss.feed.title.replace('\"','\\\"')+'\",\"link\":\"'+rss.feed.link.replace('\"','\\\"')+'\",\"subtitle\":\"\",'+'\"isSuccess\":true,'
+        str += '\"itemList\":['
         for i in rss.entries:
             str += '{\"text\":\"'+i['title'].replace('\"','\\\"')+'\",\"href\":\"'+i['link'].replace('\"','\\\"')+'\"},'
         str = str[0:-1]
