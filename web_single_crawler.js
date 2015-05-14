@@ -26,11 +26,12 @@ function(status) {
             var aStr = '{\"isSuccess\":true,\"itemList\":[';
             while((a = aList.iterateNext())!=null){
                 if(a.innerText !== null && a.innerText !== undefined && a.innerText !== ''){
-                    aStr += '{\"text\":\"'+a.innerText+'\",\"href\":\"'+a.href+'\"},'
+                    aStr += '{\"text\":\"'+a.innerText.replace(/\"/g,'\\\"')+'\",\"href\":\"'+a.href+'\"},'
                 }
             }
-              aStr = aStr.substring(0,aStr.length-1);
-              aStr += ']}'
+            aStr = aStr.substring(0,aStr.length-1);
+            aStr += ']}'
+
             return aStr;
             },xpath);
         console.log(res);

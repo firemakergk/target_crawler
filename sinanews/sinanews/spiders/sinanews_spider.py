@@ -65,7 +65,7 @@ class SinanewsSpider(Spider):
             link = news.xpath('@href').extract()[0]
             item['text'] = name.encode('utf-8')
             item['href'] = link
-
+            print name.encode('utf-8')
             items.append(item)
             #log.msg("Appending item...", level='INFO')
 
@@ -111,7 +111,7 @@ class SinanewsSpider(Spider):
                 i['href'] = prefix + i['href']
 
             if not linkMap.has_key(i['href']) or len(linkMap[i['href']]) < len(i['text']):
-                linkMap[i['href']] = i['text']
+                linkMap[i['href']] = i['text'].replace('\"','\\\"')
         
         str = '['
         for i in items:
