@@ -7,6 +7,7 @@ from scrapy.http import Request
 import hashlib
 import simplejson as json
 import time
+import re
 
 from sinanews.items import SinanewsItem
 
@@ -21,9 +22,10 @@ class SinanewsSpider(Spider):
     name = u'sinanews'
     allowed_domains = []
     start_urls = []
+    hrefRex = re.compile(r'(https?://.*?/)')
     def nextTarget(self):
         try:
-            self.conn = MySQLdb.connect(host="localhost", user="webmoudel", passwd="newsMetro01", db="newsmetro", port=3306, charset="utf8")
+            self.conn = MySQLdb.connect(host="localhost", user="root", passwd="root", db="newsmetro", port=3306, charset="utf8")
         except MySQLdb.Error,e:
             print "Mysql Error %d: %s" % (e.args[0], e.args[1])
 
@@ -56,7 +58,9 @@ class SinanewsSpider(Spider):
 
         for news in news_list:
             item = SinanewsItem()
-
+            names =  news.xpath('text()').extract()
+            if len(names) == 0:
+                continue
             name = news.xpath('text()').extract()[0]
             link = news.xpath('@href').extract()[0]
             item['text'] = name.encode('utf-8')
@@ -80,25 +84,43 @@ class SinanewsSpider(Spider):
         self.conn.commit()
 
         cur = self.conn.cursor()
-        cur.execute('select count(*) from target_mapping as tm where tm.target_id=%s', current_target['id'])
+        cur.execute('select count(*) from target_mapping as tm where tm.target_id=%s', (current_target['id'],))
         count = cur.fetchone()[0]
 
         if count == 1:
-            jsonStr = self.transJson(items)
+            jsonStr = self.transJson(items,current_target)
             mValue = (jsonStr , time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())), current_target['id'])
             cur.execute('update target_mapping set items = %s , update_time=%s where target_id=%s', mValue)
         elif count==0:
-            jsonStr = self.transJson(items)
+            jsonStr = self.transJson(items,current_target)
             mValue = (current_target['id'], jsonStr , time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
             cur.execute('insert into target_mapping(target_id,items,update_time) values(%s,%s,%s)', mValue)
         self.redis_conn.set('target:md5:'+str(current_target['id']), md5)
         self.conn.commit()
         return
 
-    def transJson(self,items):
+    def transJson(self,items,target):
+        prefix = self.hrefRex.search(target['url']).group(1)
+        linkMap = {}
+
+        for i in items:
+            if i['text']==None or i['text'].strip()=="" or i['href']==None or i['href'].strip()=="" :
+                continue
+            
+            if i['href'].find('http://') == -1 :
+                i['href'] = prefix + i['href']
+
+            if not linkMap.has_key(i['href']) or len(linkMap[i['href']]) < len(i['text']):
+                linkMap[i['href']] = i['text']
+        
         str = '['
         for i in items:
-            str += '{\"text\":\"'+i['text']+'\",\"href\":\"'+i['href']+'\"},'
+            if linkMap[i['href']]==None :
+                continue
+            str += '{\"text\":\"'+linkMap[i['href']]+'\",\"href\":\"'+i['href']+'\"},'
+            linkMap[i['href']] = None
+        
         str = str[0:-1]
+
         str += ']'
         return str
