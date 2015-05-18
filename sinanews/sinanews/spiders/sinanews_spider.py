@@ -64,7 +64,7 @@ class SinanewsSpider(Spider):
             name = news.xpath('text()').extract()[0]
             link = news.xpath('@href').extract()[0]
             item['text'] = name.encode('utf-8')
-            item['href'] = link
+            item['href'] = link.strip()
             print name.encode('utf-8')
             items.append(item)
             #log.msg("Appending item...", level='INFO')
