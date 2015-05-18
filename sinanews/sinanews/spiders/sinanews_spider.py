@@ -111,7 +111,7 @@ class SinanewsSpider(Spider):
                 i['href'] = prefix + i['href']
 
             if not linkMap.has_key(i['href']) or len(linkMap[i['href']]) < len(i['text']):
-                linkMap[i['href']] = i['text'].replace('\"','\\\"')
+                linkMap[i['href']] = i['text'].replace('\"','\\\"').strip()
         
         str = '['
         for i in items:
