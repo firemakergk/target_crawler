@@ -87,14 +87,14 @@ class SinanewsSpider(Spider):
         cur.execute('select count(*) from target_mapping as tm where tm.target_id=%s', (current_target['id'],))
         count = cur.fetchone()[0]
 
+        jsonStr = self.transJson(items,current_target)
+        jsonMd5 = hashlib.md5(jsonStr).hexdigest()
         if count == 1:
-            jsonStr = self.transJson(items,current_target)
-            mValue = (jsonStr , time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())), current_target['id'])
-            cur.execute('update target_mapping set items = %s , update_time=%s where target_id=%s', mValue)
+            mValue = (jsonStr , jsonMd5 , time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())), current_target['id'])
+            cur.execute('update target_mapping set items = %s , md5 = %s , update_time=%s where target_id=%s', mValue)
         elif count==0:
-            jsonStr = self.transJson(items,current_target)
-            mValue = (current_target['id'], jsonStr , time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
-            cur.execute('insert into target_mapping(target_id,items,update_time) values(%s,%s,%s)', mValue)
+            mValue = (current_target['id'], jsonStr , jsonMd5 , time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
+            cur.execute('insert into target_mapping(target_id,items,md5,update_time) values(%s,%s,%s,%s)', mValue)
         self.redis_conn.set('target:md5:'+str(current_target['id']), md5)
         self.conn.commit()
         return
