@@ -49,6 +49,9 @@ class SinanewsSpider(Spider):
         yield Request(start_url, dont_filter=True)
 
     def parse(self, response):
+        if response.status != 200 :
+            log.msg(self.current_target['url']+"crawl failure! status:"+str(response.status))
+            return
         res_body = response._get_body()
         md5 = hashlib.md5(res_body).hexdigest()
         #md5 = ''
