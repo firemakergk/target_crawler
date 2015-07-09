@@ -18,6 +18,7 @@ import sys
 # reload(sys)
 # sys.setdefaultencoding("utf-8")
 class SinanewsSpider(Spider):
+    handle_httpstatus_list = [302,403,404,500]
     target_list = []
     name = u'sinanews'
     allowed_domains = []
@@ -51,7 +52,8 @@ class SinanewsSpider(Spider):
     def parse(self, response):
         if response.status != 200 :
             log.msg(self.current_target['url']+"crawl failure! status:"+str(response.status))
-            return
+            self.current_target = self.target_list.next()
+            return Request(self.current_target['url'], dont_filter=True)
         res_body = response._get_body()
         md5 = hashlib.md5(res_body).hexdigest()
         #md5 = ''
@@ -74,10 +76,9 @@ class SinanewsSpider(Spider):
 
        	log.msg("Appending done.", level='INFO')
         self.updateInfo(md5, self.current_target, items)
-        yield items
 
         self.current_target = self.target_list.next()
-        yield Request(self.current_target['url'], dont_filter=True)
+        return Request(self.current_target['url'], dont_filter=True)
 
 
     def updateInfo(self, md5, current_target,items):
