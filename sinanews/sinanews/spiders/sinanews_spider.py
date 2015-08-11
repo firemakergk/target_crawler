@@ -45,15 +45,17 @@ class SinanewsSpider(Spider):
         return
 
     def start_requests(self):
-        self.current_target = self.target_list.next()
-        start_url = self.current_target['url']
-        yield Request(start_url, dont_filter=True)
+        self.current_target = next(self.target_list,None)
+        if self.current_target != None:
+            start_url = self.current_target['url']
+            yield Request(start_url, dont_filter=True)
 
     def parse(self, response):
         if response.status != 200 :
             log.msg(self.current_target['url']+"crawl failure! status:"+str(response.status))
-            self.current_target = self.target_list.next()
-            return Request(self.current_target['url'], dont_filter=True)
+            self.current_target = next(self.target_list,None)
+            if self.current_target != None:
+                return Request(self.current_target['url'], dont_filter=True)
         res_body = response._get_body()
         md5 = hashlib.md5(res_body).hexdigest()
         #md5 = ''
@@ -77,8 +79,9 @@ class SinanewsSpider(Spider):
        	log.msg("Appending done.", level='INFO')
         self.updateInfo(md5, self.current_target, items)
 
-        self.current_target = self.target_list.next()
-        return Request(self.current_target['url'], dont_filter=True)
+        self.current_target = next(self.target_list,None)
+        if self.current_target != None:
+            return Request(self.current_target['url'], dont_filter=True)
 
 
     def updateInfo(self, md5, current_target,items):
@@ -94,10 +97,10 @@ class SinanewsSpider(Spider):
         jsonStr = self.transJson(items,current_target)
         jsonMd5 = hashlib.md5(jsonStr).hexdigest()
         if count == 1:
-            mValue = (jsonStr , jsonMd5 , time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())), current_target['id'])
+            mValue = (jsonStr , jsonMd5 , time.time()*1000, current_target['id'])
             cur.execute('update target_mapping set items = %s , md5 = %s , update_time=%s where target_id=%s', mValue)
         elif count==0:
-            mValue = (current_target['id'], jsonStr , jsonMd5 , time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
+            mValue = (current_target['id'], jsonStr , jsonMd5 , time.time()*1000)
             cur.execute('insert into target_mapping(target_id,items,md5,update_time) values(%s,%s,%s,%s)', mValue)
         self.redis_conn.set('target:md5:'+str(current_target['id']), md5)
         self.conn.commit()
