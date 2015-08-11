@@ -31,7 +31,7 @@ class SinanewsSpider(Spider):
             print "Mysql Error %d: %s" % (e.args[0], e.args[1])
 
         cur = self.conn.cursor()
-        cur.execute('select * from target_point where isRss=false;')
+        cur.execute('select * from target where type=1;')
         self.conn.commit()
         for t in cur:
             print t[2]
@@ -84,7 +84,7 @@ class SinanewsSpider(Spider):
     def updateInfo(self, md5, current_target,items):
         pValue = (md5, self.current_target['id'])
         cur = self.conn.cursor()
-        cur.execute('update target_point set md5 = %s where id=%s', pValue)
+        cur.execute('update target set md5 = %s where id=%s', pValue)
         self.conn.commit()
 
         cur = self.conn.cursor()
