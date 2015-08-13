@@ -78,6 +78,7 @@ class SinanewsSpider(Spider):
 
        	log.msg("Appending done.", level='INFO')
         self.updateInfo(md5, self.current_target, items)
+        self.saveNews(items,self.current_target)
 
         self.current_target = next(self.target_list,None)
         if self.current_target != None:
@@ -131,3 +132,22 @@ class SinanewsSpider(Spider):
 
         str += ']'
         return str
+
+    def saveNews(self,items,target):
+        if items==None or len(items)==0:
+            return
+        
+        cur = self.conn.cursor()
+        prefix = self.hrefRex.search(target['url']).group(1)
+        for i in items:
+            if(len(i['href'])<0):
+                continue
+            if i['href'].find('http://') == -1 :
+                i['href'] = prefix + i['href']
+
+            newsId = cur.execute('select n.id as id from news as n where n.link=%s', (i['href'],l))
+            if newsId!=None and newsId!=0:
+                cur.execute('update news as n set n.title = %s,n.publish_time = %s where n.id=%s', (i['text'],time.time()*1000,newsId))
+            else:
+                cur.execute("insert into news(target_id,title,link,status,publish_time,create_time) \
+                    values(%s,%s,%s,%s,%s,%s)",(target['id'],i['text'],i['href'],1,time.time()*1000,time.time()*1000))
