@@ -33,8 +33,8 @@ class RssCrawler:
         self.conn.commit()
         for t in cur:
             #yield {'id': t[0], 'url': t[3], 'xpath': t[5], 'regex': t[6],'md5': t[7], 'status': t[9]}
-            print '--------crawling '+t[3] + '---------'
-            rss = feedparser.parse(t[3])
+            print '--------crawling '+t[4] + '---------'
+            rss = feedparser.parse(t[4])
             rssJson = self.transJson(rss)
             jsonMd5 = hashlib.md5(rssJson).hexdigest()
             dataVal = (t[0], rssJson , jsonMd5, time.time()*1000)
