@@ -34,8 +34,8 @@ class SinanewsSpider(Spider):
         cur.execute('select * from target where type=1;')
         self.conn.commit()
         for t in cur:
-            print t[2]
-            yield {'id': t[0], 'url': t[3], 'xpath': t[5], 'regex': t[6],'md5': t[7], 'status': t[9]}
+            print t[3]
+            yield {'id': t[0], 'url': t[4], 'xpath': t[6], 'regex': t[7],'md5': t[9], 'status': t[11]}
         cur.close()
 
     def __init__(self):
@@ -145,7 +145,8 @@ class SinanewsSpider(Spider):
             if i['href'].find('http://') == -1 :
                 i['href'] = prefix + i['href']
 
-            newsId = cur.execute('select n.id as id from news as n where n.link=%s', (i['href'],l))
+            sql = ("select n.id as id from news as n where n.link='%s'") % (i['href'])
+            newsId = cur.execute(sql)
             if newsId!=None and newsId!=0:
                 cur.execute('update news as n set n.title = %s,n.publish_time = %s where n.id=%s', (i['text'],time.time()*1000,newsId))
             else:
