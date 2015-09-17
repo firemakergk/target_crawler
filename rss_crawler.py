@@ -46,6 +46,16 @@ class RssCrawler:
                 self.conn.cursor().execute('update target_mapping set items=%s,md5=%s,update_time=%s where target_id=%s', (rssJson,jsonMd5,time.time()*1000,t[0]))
             else:
                 self.conn.cursor().execute('insert into target_mapping(target_id,items,md5,update_time) values(%s,%s,%s,%s)', dataVal)
+                
+            for i in rss.entries:
+                sql = ("select n.id as id from news as n where n.link='%s'") % (i['title'].encode('utf-8').replace('\"','\\\"'))
+                newsId = cur.execute(sql)
+                if newsId!=None and newsId!=0:
+                    cur.execute('update news as n set n.title = %s,n.publish_time = %s where n.id=%s', (i['title'].encode('utf-8').replace('\"','\\\"'),time.time()*1000,newsId))
+                else:
+                    cur.execute("insert into news(target_id,title,link,status,publish_time,create_time) \
+                        values(%s,%s,%s,%s,%s,%s)",(t[0],i['title'].encode('utf-8').replace('\"','\\\"'),i['link'].encode('utf-8').replace('\"','\\\"'),1,time.time()*1000,time.time()*1000))
+
         cur.close()
 
 
